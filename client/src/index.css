@@ -1,0 +1,31 @@
+
+body {
+  margin: 0;
+  box-sizing: border-box;
+  margin-top: 100px;
+}
+
+* {
+  margin: 0;
+  color: inherit;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.btn-space {
+  margin-right: 20px;
+}
+
+#p_wrap {
+  white-space: pre-line;
+}
+
+.btn-wrap-text {
+  overflow: hidden;
+  white-space: nowrap;
+  display: inline-block;
+  text-overflow: ellipsis;
+}
