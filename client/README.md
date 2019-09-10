@@ -4,6 +4,10 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 In the project directory, you can run:
 
+### `npm install`
+
+이 명령어를 먼저 실행시켜 필요한 패키지를 설치하는 것이 정신건강에 좋습닏나.
+
 ### `npm start`
 
 Runs the app in the development mode.<br>
