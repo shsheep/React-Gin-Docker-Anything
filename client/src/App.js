@@ -2,8 +2,8 @@ import React, { Component } from 'react'
 import {Route} from 'react-router-dom'
 import NavBar from './NavBar/NavBar'
 import Modules from './Modules/Modules'
-import MSD from './Modules/MSD'
-import SLU from './Modules/SLU';
+import Media from './Modules/Media'
+import Tab from './Modules/Tab';
 
 class App extends Component {
   render() {
@@ -11,8 +11,8 @@ class App extends Component {
       <div>
         <NavBar/>
         <Route exact path='/' component={Modules}/>
-        <Route exact path='/msd' component={MSD}/>
-        <Route exact path='/slu' component={SLU}/>
+        <Route exact path='/media' component={Media}/>
+        <Route exact path='/tab' component={Tab}/>
       </div>
     );
   }

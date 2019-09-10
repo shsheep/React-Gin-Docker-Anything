@@ -24,30 +24,21 @@ class Modules extends Component {
     return (
       
       <div className="container">
-      <Link to="/msd">
+      <Link to="/media">
         <div className="card text-white bg-secondary mb-3">
           <div className="card-body">
-            <h4 className="card-title">Music Speech Detection</h4>
+            <h4 className="card-title">Media Analyzer</h4>
           </div>
         </div>
       </Link>
 
-        <div className="row">
-          {this.state.ssmls === null && <p></p>}
-          {
-            this.state.ssmls && this.state.ssmls.map(ssml => (
-              <div key={ssml.id} className="col-sm-12 col-md-4 col-lg-3">
-                <Link to={`/${ssml.title}`}>
-                  <div className="card text-white bg-success mb-3">
-                    <div className="card-body">
-                      <h4 className="card-title">{ssml.title}</h4>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            ))
-          }
+      <Link to="/tab">
+        <div className="card text-white bg-secondary mb-3">
+          <div className="card-body">
+            <h4 className="card-title">Guitar Pro Converter to PDF</h4>
+          </div>
         </div>
+      </Link>
       </div>
     )
   }

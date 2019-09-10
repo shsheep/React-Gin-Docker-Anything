@@ -31,12 +31,12 @@ var IGNITION_LOG_FLAG bool = true
 
 func main() {
    /* * * * * * * * * * *  Initial variables related to containers * * * * * * * * * * * * * */
-   MSD_image_name := "localhost:5000/shsheep/msd_with_script"
-   SLU_image_name := "localhost:5000/shsheep/slu_with_script"
-   msd_input_repository := "/home/shsheep/Workspace/React-Gin-Docker-Anything/msd_input_repository"
-   msd_output_repository := "/home/shsheep/Workspace/React-Gin-Docker-Anything/msd_output_repository"
-   slu_input_repository := "/home/shsheep/Workspace/React-Gin-Docker-Anything/slu_input_repository"
-   slu_output_repository := "/home/shsheep/Workspace/React-Gin-Docker-Anything/slu_output_repository"
+   Media_image_name := "localhost:5000/shsheep/media_with_script"
+   TAB_image_name := "localhost:5000/shsheep/tab_with_script"
+   media_input_repository := "/home/shsheep/Workspace/React-Gin-Docker-Anything/media_input_repository"
+   media_output_repository := "/home/shsheep/Workspace/React-Gin-Docker-Anything/media_output_repository"
+   tab_input_repository := "/home/shsheep/Workspace/React-Gin-Docker-Anything/tab_input_repository"
+   tab_output_repository := "/home/shsheep/Workspace/React-Gin-Docker-Anything/tab_output_repository"
    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  */
 
    ctx := context.Background()
@@ -52,32 +52,32 @@ func main() {
       srcontainer.CheckRunningContainers(cli, ctx)
    }
    container_list := srcontainer.AssignContainerNumber()
-   slu_reader := srcontainer.PullImage(cli, ctx, SLU_image_name)
-   msd_reader := srcontainer.PullImage(cli, ctx, MSD_image_name)
+   tab_reader := srcontainer.PullImage(cli, ctx, TAB_image_name)
+   media_reader := srcontainer.PullImage(cli, ctx, Media_image_name)
 
    /* Check whether the image is normally pulled */
    if IGNITION_LOG_FLAG {
-      io.Copy(os.Stdout, msd_reader)
-      io.Copy(os.Stdout, slu_reader)
+      io.Copy(os.Stdout, media_reader)
+      io.Copy(os.Stdout, tab_reader)
    }
 
    /* Create each containers */
-   MSD_resp, err := cli.ContainerCreate(ctx,
+   Media_resp, err := cli.ContainerCreate(ctx,
       &container.Config{
-         Image: MSD_image_name,
+         Image: Media_image_name,
          Tty: true,
          },
       &container.HostConfig{
          Mounts: []mount.Mount {
             {
                Type: mount.TypeBind,
-               Source: msd_input_repository,
-               Target: "/msd/input",
+               Source: media_input_repository,
+               Target: "/media/input",
             },
             {
                Type: mount.TypeBind,
-               Source: msd_output_repository,
-               Target: "/msd/output",
+               Source: media_output_repository,
+               Target: "/media/output",
             },
          },
       }, nil, container_list[0])
@@ -85,9 +85,9 @@ func main() {
       panic(err)
    }
 
-   SLU_resp, err := cli.ContainerCreate(ctx,
+   Tab_resp, err := cli.ContainerCreate(ctx,
       &container.Config{
-         Image: SLU_image_name,
+         Image: TAB_image_name,
          Tty: true,
          },
       &container.HostConfig{
@@ -95,13 +95,13 @@ func main() {
          Mounts: []mount.Mount {
             {
                Type: mount.TypeBind,
-               Source: slu_output_repository,
-               Target: "/slu/output",
+               Source: tab_output_repository,
+               Target: "/tab/output",
             },
             {
                Type: mount.TypeBind,
-               Source: slu_input_repository,
-               Target: "/slu/input",
+               Source: tab_input_repository,
+               Target: "/tab/input",
             },
          },
       }, nil, container_list[1])
@@ -110,17 +110,17 @@ func main() {
    }
 
    /* Start(Run) the container */
-   if err := cli.ContainerStart(ctx, MSD_resp.ID, types.ContainerStartOptions{}); err != nil {
+   if err := cli.ContainerStart(ctx, Media_resp.ID, types.ContainerStartOptions{}); err != nil {
       panic(err)
    }
-   if err := cli.ContainerStart(ctx, SLU_resp.ID, types.ContainerStartOptions{}); err != nil {
+   if err := cli.ContainerStart(ctx, Tab_resp.ID, types.ContainerStartOptions{}); err != nil {
       panic(err)
    }
 
    /* Check the container logs */
    if IGNITION_LOG_FLAG {
-      srcontainer.CheckLogs(cli, ctx, MSD_resp)
-      srcontainer.CheckLogs(cli, ctx, SLU_resp)
+      srcontainer.CheckLogs(cli, ctx, Media_resp)
+      srcontainer.CheckLogs(cli, ctx, Tab_resp)
    }
 
    /* . . . . . . GIN-GONIC SERVER RUNS . . . . . . */
@@ -131,9 +131,9 @@ func main() {
       byteTestResult := make(map[string]interface{})
       bytePostResult := make(map[string]interface{})
 
-   /* * * * * * * * * * * * * * * * * * MSD * * * * * * * * * * * * * * * * * * * */
-      /* CASE : when MSD input file upload */
-      api.POST("/msd-upload", func(c *gin.Context) {
+   /* * * * * * * * * * * * * * * * * * MEDIA * * * * * * * * * * * * * * * * * * * */
+      /* CASE : when Media input file upload */
+      api.POST("/media-upload", func(c *gin.Context) {
          now := time.Now()
          file, err := c.FormFile("file")
          if err != nil {
@@ -142,7 +142,7 @@ func main() {
 
          /* Name the file with timestamp */
          filename := filepath.Base(file.Filename) + now.Format("2006-01-02T15:04:05")
-         uploadPath := msd_input_repository + "/" + filename
+         uploadPath := media_input_repository + "/" + filename
 
          if err := c.SaveUploadedFile(file, uploadPath); err != nil {
             panic(err)
@@ -154,8 +154,8 @@ func main() {
       })
 
       /* RESULT PARSING */
-      api.GET("/msd-get-result", func(c *gin.Context) {
-         result, err := ioutil.ReadFile(msd_output_repository + "/result.out")
+      api.GET("/media-get-result", func(c *gin.Context) {
+         result, err := ioutil.ReadFile(media_output_repository + "/result.out")
          if err != nil {
             panic(err)
          }
@@ -165,9 +165,9 @@ func main() {
          })
       })
 
-   /* * * * * * * * * * * * * * * * * * SLU * * * * * * * * * * * * * * * * * * * */
+   /* * * * * * * * * * * * * * * * * * TAB * * * * * * * * * * * * * * * * * * * */
       /* CASE : for input file upload */
-      api.POST("/slu-upload", func(c *gin.Context) {
+      api.POST("/tab-upload", func(c *gin.Context) {
          now := time.Now()
          file, err := c.FormFile("file")
          if err != nil {
@@ -176,30 +176,30 @@ func main() {
 
          /* Name the file with timestamp */
          filename := filepath.Base(file.Filename) + now.Format("2006-01-02T15:04:05")
-         uploadPath := slu_input_repository + "/" + filename
+         uploadPath := tab_input_repository + "/" + filename
          if err := c.SaveUploadedFile(file, uploadPath); err != nil {
             panic(err)
          }
       })
 
       /* CASE : for manually typed text */
-      api.POST("/slu-write-get-result", func(c *gin.Context) {
+      api.POST("/tab-write-get-result", func(c *gin.Context) {
          now := time.Now()
-         var byteSLU map[string]interface{}
+         var byteTAB map[string]interface{}
          tmp, _ := c.GetRawData()
 
          /* Name the file with timestamp */
-         json.Unmarshal(tmp, &byteSLU)
+         json.Unmarshal(tmp, &byteTAB)
          newFileName := "Manual_input" + now.Format("2006-01-02T15:04:05")
-         file, _ := os.Create(filepath.Join(slu_input_repository, filepath.Base(newFileName)))
+         file, _ := os.Create(filepath.Join(tab_input_repository, filepath.Base(newFileName)))
          defer file.Close()
 
-         fmt.Fprint(file, byteSLU["content"])
+         fmt.Fprint(file, byteTAB["content"])
       })
 
       /* RESULT PARSING */
-      api.GET("/slu-get-result", func(c *gin.Context) {
-         result, err := ioutil.ReadFile(slu_output_repository + "/json_output.txt")
+      api.GET("/tab-get-result", func(c *gin.Context) {
+         result, err := ioutil.ReadFile(tab_output_repository + "/json_output.txt")
          if err != nil {
             panic(err)
          }
